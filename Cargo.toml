@@ -1,0 +1,32 @@
+[package]
+name = "codeskeleton"
+version = "0.1.0"
+edition = "2021"
+description = "Turn any folder of code into a queryable knowledge graph. Single binary, zero runtime dependencies, blazing fast."
+license = "MIT"
+repository = "https://github.com/DhanushNehru/codeskeleton"
+keywords = ["knowledge-graph", "code-analysis", "tree-sitter", "graph", "ast"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+tree-sitter = "0.24"
+tree-sitter-python = "0.23"
+tree-sitter-javascript = "0.23"
+tree-sitter-typescript = "0.23"
+tree-sitter-go = "0.23"
+tree-sitter-rust = "0.23"
+tree-sitter-java = "0.23"
+tree-sitter-c = "0.23"
+petgraph = "0.6"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+rayon = "1"
+ignore = "0.4"
+colored = "2"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true

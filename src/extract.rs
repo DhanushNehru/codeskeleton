@@ -259,7 +259,7 @@ fn resolve_name(node: tree_sitter::Node, source: &[u8], spec: &LanguageSpec) -> 
 }
 
 /// Find the body node of a definition.
-fn find_body(node: tree_sitter::Node, spec: &LanguageSpec) -> Option<tree_sitter::Node> {
+fn find_body<'a>(node: tree_sitter::Node<'a>, spec: &LanguageSpec) -> Option<tree_sitter::Node<'a>> {
     if let Some(body) = node.child_by_field_name(spec.body_field) {
         return Some(body);
     }
@@ -360,10 +360,6 @@ fn extract_rust_import(node: tree_sitter::Node, source: &[u8]) -> Option<String>
 
 fn extract_go_import(node: tree_sitter::Node, source: &[u8]) -> Option<String> {
     // Go import: `import "fmt"` or `import ("fmt"; "net/http")`
-    let text = node_text(node, source);
-    // Find quoted strings
-    let mut result = None;
-    let mut cursor = node.walk();
     fn find_strings(node: tree_sitter::Node, source: &[u8]) -> Vec<String> {
         let mut results = Vec::new();
         if node.kind() == "interpreted_string_literal" {

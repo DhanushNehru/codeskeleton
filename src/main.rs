@@ -38,7 +38,7 @@ struct Cli {
     no_cache: bool,
 
     /// Output formats (comma-separated: json, html, md).
-    #[arg(long, value_delimiter = ',', default_value = "json,html,md")]
+    #[arg(long, value_delimiter = ',', default_value = "json,html,md", value_parser = ["json", "html", "md"])]
     format: Vec<String>,
 }
 
@@ -153,22 +153,27 @@ fn main() {
 
     // ── Step 7: Export ──────────────────────────────────────────────
     let out_dir = root.join(OUTPUT_DIR);
-    let formats = &cli.format;
+    std::fs::create_dir_all(&out_dir).expect("Failed to create output directory");
+
+    let formats: std::collections::HashSet<String> = cli.format.into_iter().collect();
+    let want_json = formats.contains("json");
+    let want_html = formats.contains("html");
+    let want_md = formats.contains("md");
 
     // JSON
-    if formats.contains(&"json".to_string()) {
+    if want_json {
         export::export_json(&kg, &communities, &analysis, &out_dir)
             .expect("Failed to write graph.json");
     }
 
     // HTML
-    if formats.contains(&"html".to_string()) {
+    if want_html {
         export::export_html(&kg, &communities, &analysis, &out_dir)
             .expect("Failed to write graph.html");
     }
 
     // Report
-    if formats.contains(&"md".to_string()) {
+    if want_md {
         let report_content = report::render_report(&analysis, &communities);
         std::fs::write(out_dir.join("GRAPH_REPORT.md"), &report_content)
             .expect("Failed to write GRAPH_REPORT.md");
@@ -187,13 +192,13 @@ fn main() {
         "✓".green().bold(),
         "Output:".bold()
     );
-    if formats.contains(&"json".to_string()) {
+    if want_json {
         println!("    {} graph.json         — queryable graph data", "→".dimmed());
     }
-    if formats.contains(&"html".to_string()) {
+    if want_html {
         println!("    {} graph.html         — interactive visualization", "→".dimmed());
     }
-    if formats.contains(&"md".to_string()) {
+    if want_md {
         println!("    {} GRAPH_REPORT.md    — god nodes, communities, questions", "→".dimmed());
     }
     println!();

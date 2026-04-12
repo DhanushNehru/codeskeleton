@@ -36,6 +36,10 @@ struct Cli {
     /// Force full re-extraction (ignore cache).
     #[arg(long)]
     no_cache: bool,
+
+    /// Output formats (comma-separated: json, html, md).
+    #[arg(long, value_delimiter = ',', default_value = "json,html,md")]
+    format: Vec<String>,
 }
 
 fn main() {
@@ -149,19 +153,26 @@ fn main() {
 
     // ── Step 7: Export ──────────────────────────────────────────────
     let out_dir = root.join(OUTPUT_DIR);
+    let formats = &cli.format;
 
     // JSON
-    export::export_json(&kg, &communities, &analysis, &out_dir)
-        .expect("Failed to write graph.json");
+    if formats.contains(&"json".to_string()) {
+        export::export_json(&kg, &communities, &analysis, &out_dir)
+            .expect("Failed to write graph.json");
+    }
 
     // HTML
-    export::export_html(&kg, &communities, &analysis, &out_dir)
-        .expect("Failed to write graph.html");
+    if formats.contains(&"html".to_string()) {
+        export::export_html(&kg, &communities, &analysis, &out_dir)
+            .expect("Failed to write graph.html");
+    }
 
     // Report
-    let report_content = report::render_report(&analysis, &communities);
-    std::fs::write(out_dir.join("GRAPH_REPORT.md"), &report_content)
-        .expect("Failed to write GRAPH_REPORT.md");
+    if formats.contains(&"md".to_string()) {
+        let report_content = report::render_report(&analysis, &communities);
+        std::fs::write(out_dir.join("GRAPH_REPORT.md"), &report_content)
+            .expect("Failed to write GRAPH_REPORT.md");
+    }
 
     // Save cache manifest
     if !cli.no_cache {
@@ -176,9 +187,15 @@ fn main() {
         "✓".green().bold(),
         "Output:".bold()
     );
-    println!("    {} graph.json         — queryable graph data", "→".dimmed());
-    println!("    {} graph.html         — interactive visualization", "→".dimmed());
-    println!("    {} GRAPH_REPORT.md    — god nodes, communities, questions", "→".dimmed());
+    if formats.contains(&"json".to_string()) {
+        println!("    {} graph.json         — queryable graph data", "→".dimmed());
+    }
+    if formats.contains(&"html".to_string()) {
+        println!("    {} graph.html         — interactive visualization", "→".dimmed());
+    }
+    if formats.contains(&"md".to_string()) {
+        println!("    {} GRAPH_REPORT.md    — god nodes, communities, questions", "→".dimmed());
+    }
     println!();
     println!(
         "  {} in {:.2}s",

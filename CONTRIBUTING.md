@@ -31,7 +31,7 @@ You'll need the Rust toolchain installed on your machine. We recommend using [ru
 
 ## 🏗️ Project Structure
 
-Each stage of the analysis pipeline is a pure function in its own module:
+Each stage of the analysis pipeline is implemented as a separate module with a small, focused API:
 
 | Module | Responsibility |
 |--------|---------------|

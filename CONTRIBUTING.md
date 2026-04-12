@@ -55,7 +55,7 @@ Adding support for a new language involves these steps:
 3. **Define the `LanguageSpec`** with AST node types (classes, functions, etc.).
 4. **Map the extensions** in the `from_extension()` function in `src/languages.rs`.
 5. **Implement an import extractor** in `src/extract.rs`.
-6. **Add test fixtures** in `tests/fixtures/` to verify extraction.
+6. **Add or extend unit tests** alongside the relevant `src/` modules to verify detection and extraction behavior for the new language.
 
 ## ✅ Quality Standards
 

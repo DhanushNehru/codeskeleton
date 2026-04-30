@@ -116,7 +116,7 @@ fn build_export(
     }
 }
 
-fn generate_html(export: &ExportGraph, graph_json: &str) -> String {
+fn generate_html(export: &ExportGraph, _graph_json: &str) -> String {
     // Generate community color palette
     let community_count = export.communities.len().max(1);
     let mut colors = String::new();

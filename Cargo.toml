@@ -1,6 +1,6 @@
 [package]
 name = "codeskeleton"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Turn any folder of code into a queryable knowledge graph. Single binary, zero runtime dependencies, blazing fast."
 license = "MIT"

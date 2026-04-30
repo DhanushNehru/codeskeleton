@@ -1,5 +1,10 @@
 //! codeskeleton CLI — turn any folder of code into a queryable knowledge graph.
 
+use mimalloc::MiMalloc;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 use clap::Parser as ClapParser;
 use colored::Colorize;
 use rayon::prelude::*;
@@ -29,17 +34,13 @@ const CACHE_DIR: &str = "codeskeleton-out/cache";
     after_help = "Examples:\n  codeskeleton .              Analyze the current directory\n  codeskeleton ./src          Analyze a specific folder\n  codeskeleton . --no-cache   Force full re-extraction"
 )]
 struct Cli {
-    /// Path to the directory to analyze.
-    #[arg(default_value = ".")]
-    path: PathBuf,
+    /// Path to the directory to analyze. If not provided, a folder picker will open.
+    #[arg()]
+    path: Option<PathBuf>,
 
     /// Force full re-extraction (ignore cache).
     #[arg(long)]
     no_cache: bool,
-
-    /// Output formats (comma-separated: json, html, md).
-    #[arg(long, value_delimiter = ',', default_value = "json,html,md", value_parser = ["json", "html", "md"])]
-    format: Vec<String>,
 }
 
 fn main() {
@@ -53,14 +54,24 @@ fn main() {
         format!("v{}", VERSION).dimmed()
     );
 
-    let root = cli.path.canonicalize().unwrap_or_else(|_| {
-        eprintln!(
-            "  {} Path not found: {}",
-            "✗".red(),
-            cli.path.display()
-        );
-        std::process::exit(1);
-    });
+    let root = if let Some(p) = cli.path {
+        p.canonicalize().unwrap_or_else(|_| {
+            eprintln!(
+                "  {} Path not found: {}",
+                "✗".red(),
+                p.display()
+            );
+            std::process::exit(1);
+        })
+    } else {
+        println!("  {} Opening file picker to choose a repository...", "→".bright_cyan());
+        if let Some(folder) = rfd::FileDialog::new().pick_folder() {
+            folder
+        } else {
+            eprintln!("  {} No repository selected. Exiting.", "✗".red());
+            std::process::exit(1);
+        }
+    };
 
     // ── Step 1: Detect files ────────────────────────────────────────
     let all_files = detect::collect_files(&root);
@@ -153,31 +164,19 @@ fn main() {
 
     // ── Step 7: Export ──────────────────────────────────────────────
     let out_dir = root.join(OUTPUT_DIR);
-    std::fs::create_dir_all(&out_dir).expect("Failed to create output directory");
-
-    let formats: std::collections::HashSet<String> = cli.format.into_iter().collect();
-    let want_json = formats.contains("json");
-    let want_html = formats.contains("html");
-    let want_md = formats.contains("md");
 
     // JSON
-    if want_json {
-        export::export_json(&kg, &communities, &analysis, &out_dir)
-            .expect("Failed to write graph.json");
-    }
+    export::export_json(&kg, &communities, &analysis, &out_dir)
+        .expect("Failed to write graph.json");
 
     // HTML
-    if want_html {
-        export::export_html(&kg, &communities, &analysis, &out_dir)
-            .expect("Failed to write graph.html");
-    }
+    export::export_html(&kg, &communities, &analysis, &out_dir)
+        .expect("Failed to write graph.html");
 
     // Report
-    if want_md {
-        let report_content = report::render_report(&analysis, &communities);
-        std::fs::write(out_dir.join("GRAPH_REPORT.md"), &report_content)
-            .expect("Failed to write GRAPH_REPORT.md");
-    }
+    let report_content = report::render_report(&analysis, &communities);
+    std::fs::write(out_dir.join("GRAPH_REPORT.md"), &report_content)
+        .expect("Failed to write GRAPH_REPORT.md");
 
     // Save cache manifest
     if !cli.no_cache {
@@ -192,15 +191,9 @@ fn main() {
         "✓".green().bold(),
         "Output:".bold()
     );
-    if want_json {
-        println!("    {} graph.json         — queryable graph data", "→".dimmed());
-    }
-    if want_html {
-        println!("    {} graph.html         — interactive visualization", "→".dimmed());
-    }
-    if want_md {
-        println!("    {} GRAPH_REPORT.md    — god nodes, communities, questions", "→".dimmed());
-    }
+    println!("    {} graph.json         — queryable graph data", "→".dimmed());
+    println!("    {} graph.html         — interactive visualization", "→".dimmed());
+    println!("    {} GRAPH_REPORT.md    — god nodes, communities, questions", "→".dimmed());
     println!();
     println!(
         "  {} in {:.2}s",

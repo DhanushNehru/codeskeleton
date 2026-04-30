@@ -34,6 +34,20 @@ pub fn collect_files(root: &Path) -> Vec<PathBuf> {
                 .and_then(|ext| ext.to_str())
                 .map_or(false, |ext| CODE_EXTENSIONS.contains(&ext))
         })
+        .filter(|entry| {
+            let path = entry.path();
+            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                if name.ends_with(".min.js") || name.ends_with(".bundle.js") || name.ends_with(".min.css") {
+                    return false;
+                }
+            }
+            if let Ok(metadata) = entry.metadata() {
+                if metadata.len() > 1024 * 1024 { // 1 MB limit
+                    return false;
+                }
+            }
+            true
+        })
         .map(|entry| entry.into_path())
         .collect();
 

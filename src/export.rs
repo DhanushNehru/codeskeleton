@@ -2,7 +2,6 @@
 
 use crate::analyze::Analysis;
 use crate::graph::KnowledgeGraph;
-use petgraph::visit::EdgeRef;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Write;
@@ -116,7 +115,7 @@ fn build_export(
     }
 }
 
-fn generate_html(export: &ExportGraph, _graph_json: &str) -> String {
+fn generate_html(export: &ExportGraph, graph_json: &str) -> String {
     // Generate community color palette
     let community_count = export.communities.len().max(1);
     let mut colors = String::new();
@@ -145,13 +144,13 @@ fn generate_html(export: &ExportGraph, _graph_json: &str) -> String {
             vis_nodes,
             r#"{{id:"{}",label:"{}",shape:"{}",size:{},group:{},title:"{} ({}) — {}:L{}"}},"#,
             node.id,
-            node.label.replace('"', "\\\""),
+            node.label.replace('"', r#"\""#),
             shape,
             size,
             color_idx,
-            node.label.replace('"', "\\\""),
+            node.label.replace('"', r#"\""#),
             node.kind,
-            node.source_file.replace('"', "\\\""),
+            node.source_file.replace('"', r#"\""#),
             node.line
         )
         .unwrap();

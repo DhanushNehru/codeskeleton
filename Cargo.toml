@@ -25,6 +25,8 @@ sha2 = "0.10"
 rayon = "1"
 ignore = "0.4"
 colored = "2"
+mimalloc = { version = "0.1", default-features = false }
+rfd = "0.14"
 
 [profile.release]
 opt-level = 3

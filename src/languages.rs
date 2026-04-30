@@ -38,14 +38,14 @@ impl SupportedLanguage {
     /// Get the tree-sitter Language for this language.
     pub fn ts_language(&self) -> Language {
         match self {
-            Self::Python => tree_sitter_python::language(),
-            Self::JavaScript => tree_sitter_javascript::language(),
-            Self::TypeScript => tree_sitter_typescript::language_typescript(),
-            Self::Tsx => tree_sitter_typescript::language_tsx(),
-            Self::Rust => tree_sitter_rust::language(),
-            Self::Go => tree_sitter_go::language(),
-            Self::Java => tree_sitter_java::language(),
-            Self::C => tree_sitter_c::language(),
+            Self::Python => tree_sitter_python::LANGUAGE.into(),
+            Self::JavaScript => tree_sitter_javascript::LANGUAGE.into(),
+            Self::TypeScript => tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+            Self::Tsx => tree_sitter_typescript::LANGUAGE_TSX.into(),
+            Self::Rust => tree_sitter_rust::LANGUAGE.into(),
+            Self::Go => tree_sitter_go::LANGUAGE.into(),
+            Self::Java => tree_sitter_java::LANGUAGE.into(),
+            Self::C => tree_sitter_c::LANGUAGE.into(),
         }
     }
 

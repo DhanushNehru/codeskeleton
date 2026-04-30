@@ -2,6 +2,7 @@
 
 use crate::analyze::Analysis;
 use crate::graph::KnowledgeGraph;
+use petgraph::visit::EdgeRef;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Write;
